@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoramento Fiorino 01</title>
+    <!-- CSS do Mapa -->
+    <link rel="stylesheet" href="https://unpkg.com" />
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; }
+        #painel { background: #2c3e50; color: white; padding: 15px; display: flex; justify-content: space-around; font-size: 14px; }
+        #mapa { flex: 1; width: 100%; }
+        .status-badge { padding: 5px 10px; border-radius: 4px; font-weight: bold; }
+        .bloqueado { background: #e74c3c; }
+        .liberado { background: #2ecc71; }
+    </style>
+</head>
+<body>
+
+    <div id="painel">
+        <div><strong>Status Fiorino 01</strong></div>
+        <div>Última Atualização: <span id="hora">-</span></div>
+        <div>Modo Origem: <span id="modo">-</span></div>
+        <div>Status da Bomba: <span id="bomba" class="status-badge">-</span></div>
+    </div>
+
+    <div id="mapa"></div>
+
+    <!-- Scripts do Mapa -->
+    <script src="https://unpkg.com"></script>
+    <script>
+        // Inicializa o mapa focado provisoriamente no Brasil
+        const mapa = L.map('mapa').setView([-23.550520, -46.633309], 13);
+        
+        // Carrega o design das ruas gratuito do OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(mapa);
+
+        // Cria o marcador do veículo no mapa
+        const marcador = L.marker([-23.550520, -46.633309]).addTo(mapa);
+
+        // Função que vai na API buscar a última localização enviada pela Fiorino
+        async function atualizarPainel() {
+            try {
+                const resposta = await fetch('/api/fiorino01/posicao');
+                const dados = await resposta.json();
+
+                // Atualiza os textos do cabeçalho
+                document.getElementById('hora').innerText = dados.atualizadoEm;
+                document.getElementById('modo').innerText = dados.wifi === 1 ? "Wi-Fi Proximidade" : "Satélite/LBS";
+                
+                const badgeBomba = document.getElementById('bomba');
+                if (dados.bloqueado == 1 || dados.bloqueado === true) {
+                    badgeBomba.innerText = "BLOQUEADA";
+                    badgeBomba.className = "status-badge bloqueado";
+                } else {
+                    badgeBomba.innerText = "LIBERADA";
+                    badgeBomba.className = "status-badge liberado";
+                }
+
+                // Move o marcador do mapa para a nova coordenada recebida
+                const novaCoordenada = [dados.lat, dados.lon];
+                marcador.setLatLng(novaCoordenada);
+                mapa.panTo(novaCoordenada);
+
+            } catch (erro) {
+                console.error("Erro ao buscar dados do servidor:", erro);
+            }
+        }
+
+        // Fica perguntando ao servidor se chegou posição nova a cada 5 segundos
+        setInterval(atualizarPainel, 5000);
+        atualizarPainel();
+    </script>
+</body>
+</html>
