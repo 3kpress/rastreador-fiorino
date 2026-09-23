@@ -1,0 +1,12 @@
+{
+  "name": "rastreador-fiorino",
+  "version": "1.0.0",
+  "description": "Sistema de telemetria para o ESP32 e SIM7000",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
