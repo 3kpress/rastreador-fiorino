@@ -47,9 +47,10 @@ app.get('/api/fiorino01/posicao', (req, res) => {
     res.json(ultimaPosicao);
 });
 
-// --- INICIALIZAÇÃO DO SERVIDOR ---
-// O Railway exige ler primeiro a variável interna process.env.PORT para validar o Healthcheck
-const PORT = process.env.PORT || 80;
+// --- INICIALIZAÇÃO DO SERVIDOR (CORREÇÃO DE PORTA DINÂMICA) ---
+// O Railway exige ler OBRIGATORIAMENTE a variável process.env.PORT primeiro
+const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Servidor definitivo rodando na porta ${PORT}`);
 });
