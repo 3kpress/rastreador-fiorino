@@ -26,7 +26,7 @@ app.post('/api/fiorino01/telemetria', (req, res) => {
             lat: parseFloat(req.body.lat),
             lon: parseFloat(req.body.lon),
             bloqueado: req.body.bloqueado,
-            atualizadoEm: new Date().toLocaleTimeString('pt-BR')
+            atualizadoEm: new Date().toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' })
         };
         
         // Responde 200 OK para o modem desligar o socket sabendo que deu certo
@@ -47,10 +47,9 @@ app.get('/api/fiorino01/posicao', (req, res) => {
     res.json(ultimaPosicao);
 });
 
-// Inicia o servidor na porta 80 (a mesma liberada no chip da Vivo M2M)
-// Substitua o final do seu server.js por este bloco:
-const PORT = process.env.PORT || 80; // A nuvem escolhe a porta automaticamente
-app.listen(PORT, () => {
+// --- INICIALIZAÇÃO DO SERVIDOR ---
+// O Railway exige ler primeiro a variável interna process.env.PORT para validar o Healthcheck
+const PORT = process.env.PORT || 80;
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Servidor definitivo rodando na porta ${PORT}`);
 });
-
