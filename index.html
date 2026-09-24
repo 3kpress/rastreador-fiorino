@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoramento Fiorino 01</title>
-    <!-- CSS do Mapa -->
+    <!-- CORRIGIDO: CSS Oficial do Leaflet Mapa -->
     <link rel="stylesheet" href="https://unpkg.com" />
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; }
-        #painel { background: #2c3e50; color: white; padding: 15px; display: flex; justify-content: space-around; font-size: 14px; }
+        #painel { background: #2c3e50; color: white; padding: 15px; display: flex; justify-content: space-around; font-size: 14px; z-index: 1000; }
         #mapa { flex: 1; width: 100%; }
         .status-badge { padding: 5px 10px; border-radius: 4px; font-weight: bold; }
         .bloqueado { background: #e74c3c; }
@@ -26,7 +26,7 @@
 
     <div id="mapa"></div>
 
-    <!-- Scripts do Mapa -->
+    <!-- CORRIGIDO: Script JavaScript Oficial do Leaflet Mapa -->
     <script src="https://unpkg.com"></script>
     <script>
         // Inicializa o mapa focado provisoriamente no Brasil
@@ -46,23 +46,26 @@
                 const resposta = await fetch('/api/fiorino01/posicao');
                 const dados = await resposta.json();
 
-                // Atualiza os textos do cabeçalho
-                document.getElementById('hora').innerText = dados.atualizadoEm;
-                document.getElementById('modo').innerText = dados.wifi === 1 ? "Wi-Fi Proximidade" : "Satélite/LBS";
-                
-                const badgeBomba = document.getElementById('bomba');
-                if (dados.bloqueado == 1 || dados.bloqueado === true) {
-                    badgeBomba.innerText = "BLOQUEADA";
-                    badgeBomba.className = "status-badge bloqueado";
-                } else {
-                    badgeBomba.innerText = "LIBERADA";
-                    badgeBomba.className = "status-badge liberado";
-                }
+                // Garante que o painel só mude se o servidor retornar dados válidos
+                if(dados && dados.lat && dados.lon) {
+                    // Atualiza os textos do cabeçalho
+                    document.getElementById('hora').innerText = dados.atualizadoEm || 'Sem data';
+                    document.getElementById('modo').innerText = dados.wifi === 1 ? "Wi-Fi Proximidade" : "Satélite/LBS";
+                    
+                    const badgeBomba = document.getElementById('bomba');
+                    if (dados.bloqueado == 1 || dados.bloqueado === true) {
+                        badgeBomba.innerText = "BLOQUEADA";
+                        badgeBomba.className = "status-badge bloqueado";
+                    } else {
+                        badgeBomba.innerText = "LIBERADA";
+                        badgeBomba.className = "status-badge liberado";
+                    }
 
-                // Move o marcador do mapa para a nova coordenada recebida
-                const novaCoordenada = [dados.lat, dados.lon];
-                marcador.setLatLng(novaCoordenada);
-                mapa.panTo(novaCoordenada);
+                    // Move o marcador do mapa para a nova coordenada recebida
+                    const novaCoordenada = [parseFloat(dados.lat), parseFloat(dados.lon)];
+                    marcador.setLatLng(novaCoordenada);
+                    mapa.panTo(novaCoordenada);
+                }
 
             } catch (erro) {
                 console.error("Erro ao buscar dados do servidor:", erro);
